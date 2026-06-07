@@ -1,4 +1,3 @@
-
 import zombideck.versioning.BumpVersionTask
 import zombideck.versioning.PrintVersionTask
 import zombideck.versioning.ReleaseVersionTask
@@ -47,4 +46,3 @@ registerBumpTask("bumpMajor", "major")
 registerReleaseTask("releasePatch", "patch")
 registerReleaseTask("releaseMinor", "minor")
 registerReleaseTask("releaseMajor", "major")
-
