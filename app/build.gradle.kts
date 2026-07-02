@@ -23,12 +23,12 @@ plugins {
 
 configure<ApplicationExtension> {
     namespace = "org.anne.zombideck"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "org.anne.zombideck"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 37
         versionCode = appVersionCode
         versionName = appVersionName
 
