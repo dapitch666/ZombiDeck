@@ -94,9 +94,9 @@ kotlin {
 }
 
 dependencies {
-    implementation("com.google.dagger:hilt-android:2.59.2")
+    implementation("com.google.dagger:hilt-android:2.60")
     implementation("androidx.compose.foundation:foundation-layout")
-    ksp("com.google.dagger:hilt-android-compiler:2.59.2")
+    ksp("com.google.dagger:hilt-android-compiler:2.60")
     implementation("androidx.hilt:hilt-navigation-compose:1.3.0")
     implementation("androidx.preference:preference-ktx:1.2.1")
 
@@ -120,10 +120,10 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
     androidTestImplementation(platform("androidx.compose:compose-bom:2026.06.00"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    androidTestImplementation("com.google.dagger:hilt-android-testing:2.59.2")
+    androidTestImplementation("com.google.dagger:hilt-android-testing:2.60")
     androidTestImplementation("androidx.multidex:multidex:2.0.1")
-    kspTest("com.google.dagger:hilt-android-compiler:2.59.2")
-    kspAndroidTest("com.google.dagger:hilt-android-compiler:2.59.2")
+    kspTest("com.google.dagger:hilt-android-compiler:2.60")
+    kspAndroidTest("com.google.dagger:hilt-android-compiler:2.60")
 
     androidTestImplementation("androidx.navigation:navigation-testing:2.9.8")
 
