@@ -111,17 +111,16 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended")
-    implementation("androidx.fragment:fragment-ktx:1.8.9")
     implementation("androidx.navigation:navigation-compose:2.9.8")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
     androidTestImplementation(platform("androidx.compose:compose-bom:2026.06.01"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     androidTestImplementation("com.google.dagger:hilt-android-testing:2.60")
     androidTestImplementation("androidx.multidex:multidex:2.0.1")
+    androidTestImplementation("androidx.test:runner:1.7.0")
     kspTest("com.google.dagger:hilt-android-compiler:2.60")
     kspAndroidTest("com.google.dagger:hilt-android-compiler:2.60")
 

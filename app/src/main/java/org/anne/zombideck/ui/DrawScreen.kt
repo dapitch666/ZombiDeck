@@ -32,11 +32,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.ImageShader
-import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.TileMode
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.imageResource
@@ -179,6 +177,15 @@ fun DrawUIScreen(
     }
 
     val bgBitmap = ImageBitmap.imageResource(id = R.drawable.bg_sheet)
+    val bgBrush = remember(bgBitmap) {
+        ShaderBrush(
+            ImageShader(
+                image = bgBitmap,
+                tileModeX = TileMode.Repeated,
+                tileModeY = TileMode.Repeated,
+            )
+        )
+    }
 
     val allBloodStains = listOf(
         R.drawable.blood_00, R.drawable.blood_01, R.drawable.blood_02, R.drawable.blood_03,
@@ -217,25 +224,17 @@ fun DrawUIScreen(
     val bloodBitmaps = bloodConfig.map { (resId, _, _) ->
         ImageBitmap.imageResource(id = resId)
     }
+    val bloodStains = bloodConfig.zip(bloodBitmaps)
 
     ConstraintLayout(
         modifier = modifier
             .fillMaxSize()
             .drawBehind {
                 // Texture de fond tuilée
-                val paint = Paint().asFrameworkPaint()
-                val shader = ImageShader(
-                    image = bgBitmap,
-                    tileModeX = TileMode.Repeated,
-                    tileModeY = TileMode.Repeated
-                )
-                drawIntoCanvas { canvas ->
-                    paint.shader = shader
-                    canvas.nativeCanvas.drawRect(0f, 0f, size.width, size.height, paint)
-                }
+                drawRect(brush = bgBrush)
 
                 // Taches de sang
-                bloodConfig.zip(bloodBitmaps).forEach { (config, bitmap) ->
+                bloodStains.forEach { (config, bitmap) ->
                     val (_, xPercent, yPercent) = config
                     drawImage(
                         image = bitmap,
