@@ -97,7 +97,7 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.60")
     implementation("androidx.compose.foundation:foundation-layout")
     ksp("com.google.dagger:hilt-android-compiler:2.60")
-    implementation("androidx.hilt:hilt-navigation-compose:1.3.0")
+    implementation("androidx.hilt:hilt-navigation-compose:1.4.0")
     implementation("androidx.preference:preference-ktx:1.2.1")
 
     implementation("androidx.constraintlayout:constraintlayout-compose:1.1.1")
