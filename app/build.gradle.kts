@@ -121,6 +121,7 @@ dependencies {
     androidTestImplementation(platform("androidx.compose:compose-bom:2026.06.00"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     androidTestImplementation("com.google.dagger:hilt-android-testing:2.59.2")
+    androidTestImplementation("androidx.multidex:multidex:2.0.1")
     kspTest("com.google.dagger:hilt-android-compiler:2.59.2")
     kspAndroidTest("com.google.dagger:hilt-android-compiler:2.59.2")
 
