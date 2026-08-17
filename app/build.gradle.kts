@@ -100,7 +100,7 @@ dependencies {
     implementation("androidx.hilt:hilt-navigation-compose:1.4.0")
     implementation("androidx.preference:preference-ktx:1.2.1")
 
-    implementation("androidx.constraintlayout:constraintlayout-compose:1.1.1")
+    implementation("androidx.constraintlayout:constraintlayout-compose:1.1.2")
 
     implementation("androidx.core:core-ktx:1.19.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.11.0")
