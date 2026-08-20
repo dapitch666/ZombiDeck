@@ -100,7 +100,7 @@ Release signing is enabled when these environment variables are provided:
   - `ANDROID_KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD` — for signing the release APK.
   - `RELEASE_PAT` — a fine-grained personal access token scoped to this repo only, with **Contents: Read and write** and **Pull requests: Read and write** permissions. Used by the `Release` workflow so the branch push and PR it creates trigger the required status checks (actions run with the default `GITHUB_TOKEN` don't trigger other workflows).
 - Enable **Allow auto-merge** under Settings → General → Pull Requests.
-- Enable branch protection on `main`: require a pull request before merging, require the `test` and `instrumented-tests` status checks, and don't exempt administrators.
+- Enable branch protection on `main`: require a pull request before merging, require the `test` and `instrumented-tests` status checks (these are the exact job ids — that's how they appear in the required-checks picker, with no workflow-name prefix), and don't exempt administrators.
 
 ## Testing
 

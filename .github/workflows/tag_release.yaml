@@ -12,6 +12,8 @@ jobs:
   tag:
     if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'release/')
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
 
     steps:
       - name: Checkout merge commit
@@ -34,14 +36,18 @@ jobs:
           fi
 
       - name: Create and push tag
+        id: tag
         run: |
           TAG="v${{ steps.app_version.outputs.version_name }}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag -a "$TAG" -m "Release $TAG"
           git push origin "$TAG"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
   release-apk:
     needs: tag
     uses: ./.github/workflows/release_apk.yaml
+    with:
+      ref: ${{ needs.tag.outputs.tag }}
     secrets: inherit
