@@ -2,6 +2,7 @@
 [![Android Instrumented Tests](https://github.com/dapitch666/ZombiDeck/actions/workflows/android_instrumented_tests.yaml/badge.svg)](https://github.com/dapitch666/ZombiDeck/actions/workflows/android_instrumented_tests.yaml)
 [![Unit Tests](https://github.com/dapitch666/ZombiDeck/actions/workflows/unit_tests.yaml/badge.svg)](https://github.com/dapitch666/ZombiDeck/actions/workflows/unit_tests.yaml)
 [![Release APK](https://github.com/dapitch666/ZombiDeck/actions/workflows/release_apk.yaml/badge.svg)](https://github.com/dapitch666/ZombiDeck/actions/workflows/release_apk.yaml)
+[![Tag Release](https://github.com/dapitch666/ZombiDeck/actions/workflows/tag_release.yaml/badge.svg)](https://github.com/dapitch666/ZombiDeck/actions/workflows/tag_release.yaml)
 
 ## Description
 
@@ -77,15 +78,14 @@ Useful Gradle commands:
 ./gradlew bumpMajor
 ```
 
-Automated release commands:
+## Releasing
 
-```bash
-./gradlew releasePatch
-./gradlew releaseMinor
-./gradlew releaseMajor
-```
+`main` is protected — no direct pushes, including from repo admins. Releases are triggered entirely from GitHub Actions:
 
-Each `release*` task checks for a clean working tree, bumps the version, commits `version.properties`, creates the `vX.Y.Z` tag, and pushes both the branch and the tag to `origin`.
+1. Go to the **Actions** tab → **Release** workflow → **Run workflow**, and pick `patch`, `minor`, or `major`.
+2. The workflow bumps `version.properties` on a new `release/vX.Y.Z` branch, opens a PR into `main`, and sets it to auto-merge.
+3. Once the required checks (`Unit Tests`, `Android Instrumented Tests`) pass, the PR merges itself.
+4. The `Tag Release` workflow then tags `main` with `vX.Y.Z` and calls `Release APK` in the same run to build, sign, and publish the APK to GitHub Releases.
 
 Release signing is enabled when these environment variables are provided:
 
@@ -93,6 +93,14 @@ Release signing is enabled when these environment variables are provided:
 - `KEYSTORE_PASSWORD`
 - `KEY_ALIAS`
 - `KEY_PASSWORD`
+
+### One-time setup for maintainers
+
+- Add these repository secrets (Settings → Secrets and variables → Actions):
+  - `ANDROID_KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD` — for signing the release APK.
+  - `RELEASE_PAT` — a fine-grained personal access token scoped to this repo only, with **Contents: Read and write** and **Pull requests: Read and write** permissions. Used by the `Release` workflow so the branch push and PR it creates trigger the required status checks (actions run with the default `GITHUB_TOKEN` don't trigger other workflows).
+- Enable **Allow auto-merge** under Settings → General → Pull Requests.
+- Enable branch protection on `main`: require a pull request before merging, require the `test` and `instrumented-tests` status checks, and don't exempt administrators.
 
 ## Testing
 
@@ -112,13 +120,3 @@ Release signing is enabled when these environment variables are provided:
 ## License
 
 This project is distributed under the terms described in the `LICENSE` file.
-
-## Publishing APK to GitHub
-
-- Create these GitHub Actions secrets before publishing:
-  - `ANDROID_KEYSTORE_BASE64`
-  - `KEYSTORE_PASSWORD`
-  - `KEY_ALIAS`
-  - `KEY_PASSWORD`
-- Run a Gradle release task (for example `./gradlew releasePatch`).
-- The pushed tag triggers the workflow, builds a signed release APK, uploads artifacts, and publishes a GitHub Release.

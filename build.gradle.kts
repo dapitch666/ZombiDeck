@@ -1,6 +1,5 @@
 import zombideck.versioning.BumpVersionTask
 import zombideck.versioning.PrintVersionTask
-import zombideck.versioning.ReleaseVersionTask
 
 // Top-level build file where you can add configuration options common to all subprojects/modules.
 plugins {
@@ -28,21 +27,6 @@ fun registerBumpTask(taskName: String, bumpType: String) {
     }
 }
 
-fun registerReleaseTask(taskName: String, bumpType: String) {
-    tasks.register<ReleaseVersionTask>(taskName) {
-        group = "release"
-        description = "Bump $bumpType version, commit, tag, and push to remote."
-        versionFile.set(appVersionFile)
-        this.bumpType.set(bumpType)
-        remoteName.set("origin")
-        repoDir.set(layout.projectDirectory)
-    }
-}
-
 registerBumpTask("bumpPatch", "patch")
 registerBumpTask("bumpMinor", "minor")
 registerBumpTask("bumpMajor", "major")
-
-registerReleaseTask("releasePatch", "patch")
-registerReleaseTask("releaseMinor", "minor")
-registerReleaseTask("releaseMajor", "major")

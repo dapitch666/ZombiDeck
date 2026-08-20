@@ -1,0 +1,80 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      part:
+        description: 'Version part to bump'
+        required: true
+        default: patch
+        type: choice
+        options: [major, minor, patch]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  open-release-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.RELEASE_PAT }}
+          persist-credentials: true
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: "zulu"
+          java-version: "21"
+
+      - name: Bump version
+        id: bump
+        run: |
+          case "${{ inputs.part }}" in
+            major) TASK=bumpMajor ;;
+            minor) TASK=bumpMinor ;;
+            patch) TASK=bumpPatch ;;
+          esac
+          ./gradlew "$TASK"
+          VERSION_NAME="$(grep '^VERSION_NAME=' version.properties | cut -d'=' -f2)"
+          echo "version=$VERSION_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Ensure tag does not already exist
+        run: |
+          TAG="v${{ steps.bump.outputs.version }}"
+          if git ls-remote --exit-code --tags origin "$TAG" > /dev/null 2>&1; then
+            echo "::error::Tag $TAG already exists on remote."
+            exit 1
+          fi
+
+      - name: Push release branch
+        run: |
+          BRANCH="release/v${{ steps.bump.outputs.version }}"
+          if git ls-remote --exit-code --heads origin "$BRANCH" > /dev/null 2>&1; then
+            echo "::error::Branch $BRANCH already exists on remote. Merge or close the existing release PR before starting a new release."
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add version.properties
+          git commit -m "chore(release): bump version to v${{ steps.bump.outputs.version }}"
+          git push origin "$BRANCH"
+
+      - name: Open PR and enable auto-merge
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PAT }}
+        run: |
+          PR_URL=$(gh pr create \
+            --base main \
+            --head "release/v${{ steps.bump.outputs.version }}" \
+            --title "chore(release): v${{ steps.bump.outputs.version }}" \
+            --body "Automated release PR for v${{ steps.bump.outputs.version }}. Auto-merges once CI is green, then tags main and publishes the signed APK.")
+          gh pr merge --auto --squash --delete-branch "$PR_URL"
