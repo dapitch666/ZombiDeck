@@ -1,0 +1,34 @@
+name: Tag Release
+
+on:
+  pull_request:
+    types: [ closed ]
+    branches: [ "main" ]
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'release/')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v7
+        with:
+          ref: main
+
+      - name: Read app version
+        id: app_version
+        run: |
+          VERSION_NAME="$(grep '^VERSION_NAME=' version.properties | cut -d'=' -f2)"
+          echo "version_name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Create and push tag
+        run: |
+          TAG="v${{ steps.app_version.outputs.version_name }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "$TAG"
+          git push origin "$TAG"

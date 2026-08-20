@@ -41,6 +41,7 @@ Prerequisites:
 - Android Studio (recent stable version)
 - Android SDK Platform 36 (project `compileSdk = 36`)
 - JDK 21 (project Java/Kotlin toolchain)
+- [GitHub CLI](https://cli.github.com/) (`gh`), authenticated (`gh auth login`) — required by the `release*` tasks below
 
 Project setup:
 
@@ -85,7 +86,14 @@ Automated release commands:
 ./gradlew releaseMajor
 ```
 
-Each `release*` task checks for a clean working tree, bumps the version, commits `version.properties`, creates the `vX.Y.Z` tag, and pushes both the branch and the tag to `origin`.
+`main` is protected — no direct pushes are allowed, including from repo admins. Each `release*` task must be run from an up-to-date `main`, and:
+
+1. Checks for a clean working tree.
+2. Bumps the version and commits `version.properties` on a new `release/vX.Y.Z` branch.
+3. Pushes that branch and opens a PR into `main` via `gh`.
+4. Sets the PR to auto-merge (squash) once required checks pass.
+
+Once the PR merges, the `Tag Release` workflow tags `main` with `vX.Y.Z`, which triggers `Release APK` (build, sign, and publish).
 
 Release signing is enabled when these environment variables are provided:
 

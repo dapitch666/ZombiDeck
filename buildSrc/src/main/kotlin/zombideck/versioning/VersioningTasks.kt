@@ -104,7 +104,7 @@ abstract class BumpVersionTask : VersionFileTask() {
     }
 }
 
-@DisableCachingByDefault(because = "Release task mutates git state and pushes remote changes.")
+@DisableCachingByDefault(because = "Release task mutates git state, pushes a branch, and opens a PR.")
 abstract class ReleaseVersionTask : VersionFileTask() {
     @get:Input
     abstract val bumpType: Property<String>
@@ -121,26 +121,44 @@ abstract class ReleaseVersionTask : VersionFileTask() {
     @TaskAction
     fun release() {
         ensureCleanGitState()
+        ensureOnMainBranch()
 
         val updated = bumpVersion(readVersion(), bumpType.get())
         val tag = "v${updated.name}"
+        val releaseBranch = "release/$tag"
 
         ensureTagDoesNotExist(tag)
+        ensureBranchDoesNotExist(releaseBranch)
         writeVersion(updated)
 
+        runGit("checkout", "-b", releaseBranch)
         runGit("add", versionFile.get().asFile.absolutePath)
         runGit("commit", "-m", "chore(release): $tag")
-        runGit("tag", tag)
-        runGit("push", remoteName.get(), currentBranch())
-        runGit("push", remoteName.get(), tag)
+        runGit("push", "-u", remoteName.get(), releaseBranch)
 
-        logger.lifecycle("Release prepared and pushed: $tag (code ${updated.code})")
+        val prUrl = runGh(
+            "pr", "create",
+            "--base", "main",
+            "--head", releaseBranch,
+            "--title", "chore(release): $tag",
+            "--body", "Automated release PR for $tag. Merging will tag `main` and publish the signed APK.",
+        )
+        runGh("pr", "merge", releaseBranch, "--auto", "--squash", "--delete-branch")
+        runGit("checkout", "main")
+
+        logger.lifecycle("Release PR opened and set to auto-merge: $prUrl")
     }
 
     private fun ensureCleanGitState() {
         val status = runGit("status", "--porcelain")
         if (status.isNotBlank()) {
             throw GradleException("Working tree is not clean. Commit or stash changes before running a release task.")
+        }
+    }
+
+    private fun ensureOnMainBranch() {
+        if (currentBranch() != "main") {
+            throw GradleException("Release tasks must be run from an up-to-date main branch.")
         }
     }
 
@@ -153,6 +171,13 @@ abstract class ReleaseVersionTask : VersionFileTask() {
         val remoteTag = runGitAllowFailure("ls-remote", "--tags", remoteName.get(), tag)
         if (remoteTag.first == 0 && remoteTag.second.isNotBlank()) {
             throw GradleException("Tag $tag already exists on remote ${remoteName.get()}.")
+        }
+    }
+
+    private fun ensureBranchDoesNotExist(branch: String) {
+        val remoteBranch = runGitAllowFailure("ls-remote", "--heads", remoteName.get(), branch)
+        if (remoteBranch.first == 0 && remoteBranch.second.isNotBlank()) {
+            throw GradleException("Branch $branch already exists on remote ${remoteName.get()}.")
         }
     }
 
@@ -178,6 +203,24 @@ abstract class ReleaseVersionTask : VersionFileTask() {
             isIgnoreExitValue = true
         }
         return result.exitValue to output.toString().trim()
+    }
+
+    private fun runGh(vararg args: String): String {
+        val output = ByteArrayOutputStream()
+        val result = execOperations.exec {
+            workingDir = repoDir.get().asFile
+            commandLine("gh", *args)
+            standardOutput = output
+            errorOutput = output
+            isIgnoreExitValue = true
+        }
+        if (result.exitValue != 0) {
+            throw GradleException(
+                "gh ${args.joinToString(" ")} failed: ${output.toString().trim()}\n" +
+                    "Make sure the GitHub CLI (gh) is installed and authenticated (gh auth login).",
+            )
+        }
+        return output.toString().trim()
     }
 }
 

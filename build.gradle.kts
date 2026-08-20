@@ -31,7 +31,7 @@ fun registerBumpTask(taskName: String, bumpType: String) {
 fun registerReleaseTask(taskName: String, bumpType: String) {
     tasks.register<ReleaseVersionTask>(taskName) {
         group = "release"
-        description = "Bump $bumpType version, commit, tag, and push to remote."
+        description = "Bump $bumpType version, commit on a release branch, and open an auto-merging PR to main."
         versionFile.set(appVersionFile)
         this.bumpType.set(bumpType)
         remoteName.set("origin")
